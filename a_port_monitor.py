@@ -8,9 +8,6 @@ os_ken-based OpenFlow 1.3 controller that:
   - Logs all events to file and console
   - Generates alerts on port changes
   - Tracks packet/byte counts per port
-
-Author  : SDN Assignment
-Version : 1.0
 """
 
 from os_ken.base import app_manager
@@ -26,7 +23,7 @@ import logging
 import os
 import json
 
-# ── Logging setup ──────────────────────────────────────────────────────────────
+# Logging setup
 LOG_DIR = os.path.join(os.path.dirname(__file__), '..', 'logs')
 os.makedirs(LOG_DIR, exist_ok=True)
 
@@ -45,7 +42,7 @@ logging.basicConfig(
 logger = logging.getLogger('PortMonitor')
 
 
-# ── Helper ─────────────────────────────────────────────────────────────────────
+# Helper
 PORT_REASON = {
     0: 'ADD',
     1: 'DELETE',
@@ -84,7 +81,7 @@ class PortMonitorController(app_manager.OSKenApp):
 
         logger.info("PortMonitorController started. Log → %s", LOG_FILE)
 
-    # ── Switch Handshake ───────────────────────────────────────────────────────
+    # Switch Handshake
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
@@ -105,7 +102,7 @@ class PortMonitorController(app_manager.OSKenApp):
         self.port_info.setdefault(dp.id, {})
         self.mac_to_port.setdefault(dp.id, {})
 
-    # ── Packet-In (Learning Switch) ────────────────────────────────────────────
+    # Packet-In (Learning Switch)
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def packet_in_handler(self, ev):
@@ -125,7 +122,7 @@ class PortMonitorController(app_manager.OSKenApp):
         src = eth.src
         dpid = dp.id
 
-        # Learn source MAC → port
+        # Learn source MAC to port
         self.mac_to_port[dpid][src] = in_port
         logger.debug("[LEARN] dpid=%016x  %s → port %s", dpid, src, in_port)
 
@@ -158,7 +155,7 @@ class PortMonitorController(app_manager.OSKenApp):
         )
         dp.send_msg(out)
 
-    # ── Port Status Events ─────────────────────────────────────────────────────
+    # Port Status Events
 
     @set_ev_cls(ofp_event.EventOFPPortStatus, MAIN_DISPATCHER)
     def port_status_handler(self, ev):
@@ -196,7 +193,7 @@ class PortMonitorController(app_manager.OSKenApp):
             'last_change': str(datetime.datetime.now()),
         }
 
-        # ── Structured log entry ──────────────────────────────────────────────
+        # Structured log entry
         log_entry = {
             'timestamp' : str(datetime.datetime.now()),
             'dpid'      : format(dpid, '016x'),
@@ -207,7 +204,7 @@ class PortMonitorController(app_manager.OSKenApp):
         }
         logger.info("[PORT EVENT] %s", json.dumps(log_entry))
 
-        # ── Alert on state change ─────────────────────────────────────────────
+        # Alert on state change 
         if prev_state != state or reason in ('ADD', 'DELETE'):
             self._generate_alert(dpid, port_no, port_name, reason,
                                  prev_state, state)
@@ -215,7 +212,7 @@ class PortMonitorController(app_manager.OSKenApp):
         # Persist snapshot to disk
         self._save_stats()
 
-    # ── Port Statistics Poll ───────────────────────────────────────────────────
+    # Port Statistics Poll 
 
     def _port_stats_loop(self):
         """Background greenlet: request port stats from all live datapaths."""
@@ -264,14 +261,14 @@ class PortMonitorController(app_manager.OSKenApp):
                     dpid, len(self.port_info[dpid]))
         self._save_stats()
 
-    # ── Datapath Disconnect ────────────────────────────────────────────────────
+    # Datapath Disconnect
 
     @set_ev_cls(ofp_event.EventOFPStateChange, DEAD_DISPATCHER)
     def state_change_handler(self, ev):
         dpid = ev.datapath.id
         logger.warning("[SWITCH DISCONNECTED] dpid=%016x", dpid)
 
-    # ── Helpers ────────────────────────────────────────────────────────────────
+    # Helpers
 
     def _add_flow(self, dp, priority, match, actions,
                   idle_timeout=0, hard_timeout=0):
