@@ -28,7 +28,7 @@ import os
 import logging
 import re
 
-# ── Logger ─────────────────────────────────────────────────────────────────────
+# Logger
 LOG_DIR = os.path.join(os.path.dirname(__file__), '..', 'logs')
 os.makedirs(LOG_DIR, exist_ok=True)
 
@@ -42,8 +42,8 @@ logging.basicConfig(
 )
 log = logging.getLogger('TestSuite')
 
-PASS = "✅ PASS"
-FAIL = "❌ FAIL"
+PASS = "PASS"
+FAIL = "FAIL"
 SEP  = "─" * 60
 
 
@@ -100,7 +100,7 @@ def dump_flows(switch):
     return switch.cmd('ovs-ofctl -O OpenFlow13 dump-flows ' + switch.name)
 
 
-# ── Scenario 1: All-pairs connectivity ────────────────────────────────────────
+# Scenario 1: All-pairs connectivity
 
 def scenario_1_connectivity(net):
     log.info(SEP)
@@ -128,7 +128,7 @@ def scenario_1_connectivity(net):
     return failed == 0
 
 
-# ── Scenario 2: Port failure (link down/up) ────────────────────────────────────
+# Scenario 2: Port failure (link down/up)
 
 def scenario_2_port_failure(net):
     log.info(SEP)
@@ -178,7 +178,7 @@ def scenario_2_port_failure(net):
     return ok_before and ok_down and ok_after
 
 
-# ── Scenario 3: Throughput measurement ────────────────────────────────────────
+# Scenario 3: Throughput measurement 
 
 def scenario_3_throughput(net):
     log.info(SEP)
@@ -205,7 +205,7 @@ def scenario_3_throughput(net):
     return ok
 
 
-# ── Port stats dump ────────────────────────────────────────────────────────────
+# Port stats dump
 
 def dump_port_stats(net):
     log.info(SEP)
@@ -216,7 +216,7 @@ def dump_port_stats(net):
         log.info("  [%s]\n%s", sw, stats)
 
 
-# ── Main ───────────────────────────────────────────────────────────────────────
+# Main
 
 def main():
     setLogLevel('warning')   # suppress Mininet verbosity; our logger handles it
@@ -257,7 +257,7 @@ def main():
             all_pass = False
 
     log.info(SEP)
-    log.info("Overall: %s", "ALL TESTS PASSED ✅" if all_pass else "SOME TESTS FAILED ❌")
+    log.info("Overall: %s", "ALL TESTS PASSED" if all_pass else "SOME TESTS FAILED ")
     log.info("Results saved to logs/test_results.log")
     sys.exit(0 if all_pass else 1)
 
