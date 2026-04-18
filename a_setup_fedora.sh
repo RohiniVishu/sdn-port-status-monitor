@@ -18,11 +18,11 @@ error() { echo -e "${RED}[ERROR]${NC} $*"; exit 1; }
 
 info "=== SDN Port Monitor – Fedora Setup ==="
 
-# ── 1. System update ──────────────────────────────────────────────────────────
+# System update 
 info "Updating system packages …"
 dnf update -y -q
 
-# ── 2. Core dependencies ──────────────────────────────────────────────────────
+# Core dependencies
 info "Installing core dependencies …"
 dnf install -y -q \
     python3 python3-pip python3-devel \
@@ -35,13 +35,13 @@ dnf install -y -q \
     procps-ng \
     make gcc
 
-# ── 3. Enable and start Open vSwitch ─────────────────────────────────────────
+# Enable and start Open vSwitch
 info "Starting Open vSwitch …"
 systemctl enable openvswitch --now || warn "openvswitch may already be running"
 sleep 2
 ovs-vsctl show && info "OVS is running ✓" || error "OVS failed to start"
 
-# ── 4. Python packages ────────────────────────────────────────────────────────
+# Python packages
 info "Installing Python packages …"
 pip3 install --quiet --upgrade pip
 pip3 install --quiet \
@@ -52,7 +52,7 @@ pip3 install --quiet \
     webob
 
 
-# ── 5. Mininet (source install if pip version is old) ─────────────────────────
+# Mininet
 info "Installing Mininet from source …"
 if ! command -v mn &>/dev/null; then
     TMPDIR=$(mktemp -d)
@@ -64,21 +64,21 @@ if ! command -v mn &>/dev/null; then
 fi
 mn --version && info "Mininet installed ✓" || warn "mn command not found; try reloading shell"
 
-# ── 6. Kernel module ─────────────────────────────────────────────────────────
+# Kernel module
 info "Loading openvswitch kernel module …"
 modprobe openvswitch 2>/dev/null || warn "openvswitch module already loaded"
 
-# ── 7. Project structure ──────────────────────────────────────────────────────
+#  Project structure 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 mkdir -p "$SCRIPT_DIR/logs"
 info "Log directory: $SCRIPT_DIR/logs"
 
-# ── 8. Permissions ────────────────────────────────────────────────────────────
+# Permissions 
 info "Adding current user to wireshark group …"
 SUDO_USER_REAL="${SUDO_USER:-$USER}"
 usermod -aG wireshark "$SUDO_USER_REAL" 2>/dev/null || true
 
-# ── 9. Verify ─────────────────────────────────────────────────────────────────
+# Verify
 info "=== Verification ==="
 echo "Python   : $(python3 --version)"
 echo "pip      : $(pip3 --version)"
